@@ -62,36 +62,6 @@ export default function AnalyticsPage() {
                     <h1 className="text-3xl font-bold mb-2">Analytics Dashboard</h1>
                     <p className="text-gray-400">Comprehensive insights and reports</p>
                 </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => generateStudentReport(students)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg hover:shadow-lg transition-all"
-                    >
-                        <Download className="w-4 h-4" />
-                        Student Report
-                    </button>
-                    <button
-                        onClick={() => generateFeeReport(students)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg hover:shadow-lg transition-all"
-                    >
-                        <Download className="w-4 h-4" />
-                        Fee Report
-                    </button>
-                    <button
-                        onClick={() => generateComplaintReport(complaints)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-red-600 rounded-lg hover:shadow-lg transition-all"
-                    >
-                        <Download className="w-4 h-4" />
-                        Complaint Report
-                    </button>
-                    <button
-                        onClick={() => generateMonthlyReport(students, rooms, complaints)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-lg hover:shadow-lg transition-all"
-                    >
-                        <Download className="w-4 h-4" />
-                        Monthly Summary
-                    </button>
-                </div>
             </div>
 
             {/* Key Metrics */}
