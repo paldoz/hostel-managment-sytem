@@ -97,8 +97,8 @@ A modern, professional hostel management system built with **Next.js 14**, **Typ
 ## 🔑 Login Credentials
 
 ### Admin Access
-- **Username**: `admin`
-- **Password**: `admin123`
+- **Username**: ``
+- **Password**: ``
 - **Capabilities**: Full system access, manage all features
 
 ### Student Access
