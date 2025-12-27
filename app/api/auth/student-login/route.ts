@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 
+
+// Force dynamic rendering - don't run during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function POST(req: Request) {
     try {
         const { studentId, password } = await req.json()

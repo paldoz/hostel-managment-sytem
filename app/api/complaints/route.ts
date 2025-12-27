@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+
+// Force dynamic rendering - don't run during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET() {
     const complaints = await prisma.complaint.findMany();
     // Map fields similarly to students if needed, but for now direct return is likely fine

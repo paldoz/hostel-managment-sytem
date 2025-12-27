@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+
+// Force dynamic rendering - don't run during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     const student = await prisma.student.findUnique({
         where: { studentId: params.id }

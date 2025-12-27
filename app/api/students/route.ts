@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+
+// Force dynamic rendering - don't run during build
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET() {
   const students = await prisma.student.findMany();
   // Map Prisma 'studentId' (e.g. STU001) to 'id' for frontend compatibility if needed, 
