@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id        String   @id @default(cuid())
+  studentId String   @unique
+  name      String
+  phone     String
+  room      String
+  feeStatus String   @default("unpaid")
+  joinDate  String
+  email     String
+  password  String   @default("student123")
+  avatar    String?  // URL or path to avatar image
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  number    String   @unique
+  capacity  Int
+  occupied  Int      @default(0)
+  status    String   @default("available") // available, occupied, reserved, full
+}
+
+model Fee {
+  id        String   @id @default(cuid())
+  studentId String
+  month     String
+  amount    Float
+  status    String   @default("unpaid")
+  date      String?
+}
+
+model Complaint {
+  id          String   @id @default(cuid())
+  complaintId String   @unique
+  studentId   String
+  studentName String
+  category    String
+  description String
+  status      String   @default("open") // open, in-progress, resolved
+  date        String
+}
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  type      String   @default("info") // info, warning, urgent
+  // targetStudentIds String[] @default([]) // Temporarily disabled until DB syncs
+  createdAt DateTime @default(now())
+}

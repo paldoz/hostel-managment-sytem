@@ -1,0 +1,10 @@
+{
+  "/(auth)/login/page": "app/(auth)/login/page.js",
+  "/api/announcements/route": "app/api/announcements/route.js",
+  "/page": "app/page.js",
+  "/api/analytics/route": "app/api/analytics/route.js",
+  "/(dashboard)/dashboard/announcements/page": "app/(dashboard)/dashboard/announcements/page.js",
+  "/(dashboard)/dashboard/fees/page": "app/(dashboard)/dashboard/fees/page.js",
+  "/(dashboard)/dashboard/profile/page": "app/(dashboard)/dashboard/profile/page.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js"
+}

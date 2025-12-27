@@ -1,0 +1,22 @@
+Checking tables...
+Tables: [
+  {
+    "table_name": "Student"
+  },
+  {
+    "table_name": "Room"
+  },
+  {
+    "table_name": "Fee"
+  },
+  {
+    "table_name": "Complaint"
+  },
+  {
+    "table_name": "Announcement"
+  }
+]
+Attempting to count announcements...
+Error: Cannot read properties of undefined (reading 'count')
+Stack: TypeError: Cannot read properties of undefined (reading 'count')
+    at main (C:\Users\abdiq\Downloads\hostel managment sytem\check_db_diag.js:13:49)
