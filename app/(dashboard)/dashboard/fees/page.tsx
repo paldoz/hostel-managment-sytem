@@ -39,7 +39,7 @@ export default function FeesPage() {
             if (!role) {
                 router.push('/login')
             } else {
-                loadData(role, sid)
+                loadData(role, sid || undefined)
             }
         }
     }, [router])
