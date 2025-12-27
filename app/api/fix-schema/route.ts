@@ -31,7 +31,7 @@ export async function GET() {
                 await tempPrisma.$executeRawUnsafe(sql);
                 log.push('SUCCESS');
             } catch (e) {
-                log.push(`FAILED: ${e.message}`);
+                log.push(`FAILED: ${e instanceof Error ? e.message : String(e)}`);
             }
         }
 
@@ -39,6 +39,6 @@ export async function GET() {
         return NextResponse.json({ success: true, log });
     } catch (err) {
         if (tempPrisma) await tempPrisma.$disconnect();
-        return NextResponse.json({ success: false, error: err.message, log }, { status: 500 });
+        return NextResponse.json({ success: false, error: err instanceof Error ? err.message : String(err), log }, { status: 500 });
     }
 }
