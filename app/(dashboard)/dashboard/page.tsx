@@ -183,36 +183,7 @@ export default function DashboardPage() {
                 </div>
             </div>
 
-            {/* Monthly Fee Collection */}
-            <div className="glass-card p-6">
-                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <DollarSign className="w-5 h-5 text-cyan-400" />
-                    Monthly Fee Collection
-                </h2>
-                <div className="h-[200px] w-full flex items-end gap-4 p-4 bg-white/5 rounded-2xl border border-white/10">
-                    {stats.fees?.monthly?.map((month: any, i: number) => {
-                        const total = month.collected + month.pending;
-                        const height = total > 0 ? (month.collected / total) * 100 : 0;
-                        return (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-2 group relative">
-                                <div className="w-full bg-white/5 rounded-t-lg overflow-hidden h-full flex flex-col justify-end">
-                                    <div
-                                        className="w-full bg-gradient-to-t from-cyan-600 to-blue-500 transition-all duration-500"
-                                        style={{ height: `${height}%` }}
-                                    />
-                                </div>
-                                <div className="text-xs font-semibold text-gray-500">{month.month.substring(0, 3)}</div>
 
-                                {/* Tooltip */}
-                                <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-black/80 text-white text-[10px] p-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                    <div>Collected: ${month.collected}</div>
-                                    <div className="text-gray-400">Total: ${total}</div>
-                                </div>
-                            </div>
-                        )
-                    })}
-                </div>
-            </div>
         </div>
     )
 }
