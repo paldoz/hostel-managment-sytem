@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-
-// Force dynamic rendering - don't run during build
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
@@ -15,11 +13,26 @@ export async function GET(request: Request) {
             orderBy: { createdAt: 'desc' }
         });
 
-        // Add targetStudentIds if it doesn't exist (backwards compatibility)
-        const enhancedAnnouncements = announcements.map(ann => ({
-            ...ann,
-            targetStudentIds: (ann as any).targetStudentIds || []
-        }));
+        // Add targetStudentIds processing
+        const enhancedAnnouncements = announcements.map(ann => {
+            let targets: string[] = [];
+            try {
+                // Parse JSON if it's a string, or use as is if somehow array
+                if (typeof ann.targetStudentIds === 'string' && ann.targetStudentIds.startsWith('[')) {
+                    targets = JSON.parse(ann.targetStudentIds);
+                } else if (typeof ann.targetStudentIds === 'string' && ann.targetStudentIds.length > 0) {
+                    // Fallback for CSV or plain string/single ID
+                    targets = [ann.targetStudentIds];
+                }
+            } catch (e) {
+                targets = [];
+            }
+
+            return {
+                ...ann,
+                targetStudentIds: targets
+            };
+        });
 
         // Filter announcements based on student ID
         // Show all announcements if no studentId (admin view)
@@ -41,11 +54,17 @@ export async function POST(request: Request) {
     try {
         const data = await request.json();
 
+        // Ensure targetStudentIds is stored as a JSON string
+        const targets = Array.isArray(data.targetStudentIds)
+            ? JSON.stringify(data.targetStudentIds)
+            : '[]';
+
         const announcement = await prisma.announcement.create({
             data: {
                 title: data.title,
                 content: data.content,
-                type: data.type || 'info'
+                type: data.type || 'info',
+                targetStudentIds: targets
             }
         });
         return NextResponse.json(announcement);

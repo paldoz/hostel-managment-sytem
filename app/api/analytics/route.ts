@@ -5,27 +5,51 @@ import prisma from '@/lib/prisma';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
+        const { searchParams } = new URL(request.url);
+        const studentId = searchParams.get('studentId');
+
         // 1. Fee Stats
-        const fees = await prisma.fee.findMany();
-        const totalFees = fees.reduce((acc, f) => acc + f.amount, 0);
-        const collectedFees = fees.filter(f => f.status === 'paid').reduce((acc, f) => acc + f.amount, 0);
-        const pendingFees = totalFees - collectedFees;
+        const fees = await prisma.fee.findMany(studentId ? { where: { studentId } } : {});
+        const totalFees = fees.filter(f => f.status === 'paid').reduce((acc, f) => acc + f.amount, 0); // Total Revenue = Paid only
+        const collectedFees = totalFees; // Alias for clarity
+        const pendingFees = fees.filter(f => f.status === 'pending').reduce((acc, f) => acc + f.amount, 0);
 
         // 2. Room Occupancy
-        const rooms = await prisma.room.findMany();
-        const totalCapacity = rooms.reduce((acc, r) => acc + r.capacity, 0);
-        const totalOccupied = rooms.reduce((acc, r) => acc + r.occupied, 0);
-        const occupancyRate = totalCapacity > 0 ? (totalOccupied / totalCapacity) * 100 : 0;
+        let rooms = [];
+        let totalCapacity = 0;
+        let totalOccupied = 0;
+        let occupancyRate = 0;
+
+        if (studentId) {
+            // optimized for student: get only their room
+            const student = await prisma.student.findUnique({
+                where: { studentId },
+                select: { room: true }
+            });
+            if (student && student.room) {
+                rooms = await prisma.room.findMany({ where: { number: student.room } });
+            }
+            // For single student view, these totals might represent their room's status
+            totalCapacity = rooms.reduce((acc, r) => acc + r.capacity, 0);
+            totalOccupied = rooms.reduce((acc, r) => acc + r.occupied, 0);
+            occupancyRate = totalCapacity > 0 ? (totalOccupied / totalCapacity) * 100 : 0;
+        } else {
+            // Admin: get all rooms
+            rooms = await prisma.room.findMany({ orderBy: { number: 'asc' } });
+            totalCapacity = rooms.reduce((acc, r) => acc + r.capacity, 0);
+            totalOccupied = rooms.reduce((acc, r) => acc + r.occupied, 0);
+            occupancyRate = totalCapacity > 0 ? (totalOccupied / totalCapacity) * 100 : 0;
+        }
 
         // 3. Complaint Stats
-        const complaints = await prisma.complaint.findMany();
+        const complaints = await prisma.complaint.findMany(studentId ? { where: { studentId } } : {});
         const totalComplaints = complaints.length;
         const resolvedComplaints = complaints.filter(c => c.status === 'resolved').length;
         const pendingComplaints = totalComplaints - resolvedComplaints;
 
-        // 4. Monthly Collection (Simplified - grouping by month field)
+        // 4. Monthly Collection (Student sees only their payments)
         const monthlyStats = fees.reduce((acc: any, f) => {
             const month = f.month;
             if (!acc[month]) acc[month] = { month, collected: 0, pending: 0 };
@@ -45,7 +69,7 @@ export async function GET() {
                 capacity: totalCapacity,
                 occupied: totalOccupied,
                 rate: occupancyRate,
-                details: rooms
+                details: rooms // Student gets only their room, Admin gets all
             },
             complaints: {
                 total: totalComplaints,

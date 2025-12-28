@@ -1,4 +1,11 @@
 {
+  "/page": "app/page.js",
   "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js"
+  "/api/analytics/route": "app/api/analytics/route.js",
+  "/api/announcements/route": "app/api/announcements/route.js",
+  "/api/fees/route": "app/api/fees/route.js",
+  "/api/students/route": "app/api/students/route.js",
+  "/(dashboard)/dashboard/page": "app/(dashboard)/dashboard/page.js",
+  "/(dashboard)/dashboard/fees/page": "app/(dashboard)/dashboard/fees/page.js",
+  "/(dashboard)/dashboard/announcements/page": "app/(dashboard)/dashboard/announcements/page.js"
 }

@@ -49,13 +49,11 @@ export default function AnnouncementsPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            // Temporarily send without targetStudentIds until DB is synced
-            const { targetStudentIds, ...dataToSend } = formData;
-
+            // Send data including targetStudentIds
             const res = await fetch('/api/announcements', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToSend)
+                body: JSON.stringify(formData)
             })
 
             if (res.ok) {

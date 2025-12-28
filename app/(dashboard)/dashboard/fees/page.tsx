@@ -115,19 +115,32 @@ export default function FeesPage() {
     }
 
     // Calculate stats
-    const totalRevenue = fees.reduce((sum, fee) => sum + (fee.amount || 0), 0)
+    const totalRevenue = fees.reduce((sum, fee) => fee.status === 'paid' ? sum + (fee.amount || 0) : sum, 0)
     const paidStudentsCount = students.filter(s => s.feeStatus === 'paid').length
     const unpaidStudentsCount = students.filter(s => s.feeStatus === 'unpaid').length
     const pendingApprovalsCount = fees.filter(f => f.status === 'pending').length
 
-    const filteredStudents = students.filter(s => {
+    const filteredStudents = students.map(student => {
+        const studentPayments = fees.filter(f => f.studentId === student.id)
+        const lastPayment = studentPayments.length > 0
+            ? [...studentPayments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
+            : null
+
+        // Determine effective status: pending > paid > unpaid
+        let displayStatus = student.feeStatus;
+        if (lastPayment && lastPayment.status === 'pending') {
+            displayStatus = 'pending';
+        }
+
+        return { ...student, displayStatus, lastPayment }
+    }).filter(s => {
         const name = s.name || '';
         const id = s.id || '';
         const room = s.room || '';
         const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             id.toLowerCase().includes(searchTerm.toLowerCase()) ||
             room.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || s.feeStatus === statusFilter;
+        const matchesStatus = statusFilter === 'all' || s.displayStatus === statusFilter;
         return matchesSearch && matchesStatus;
     })
 
@@ -228,10 +241,7 @@ export default function FeesPage() {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {filteredStudents.map((student) => {
-                                const studentPayments = fees.filter(f => f.studentId === student.id)
-                                const lastPayment = studentPayments.length > 0
-                                    ? [...studentPayments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
-                                    : null
+                                const { displayStatus, lastPayment } = student;
 
                                 return (
                                     <tr key={student.id} className="hover:bg-white/5 transition-colors group">
@@ -252,11 +262,13 @@ export default function FeesPage() {
                                             </span>
                                         </td>
                                         <td className="py-4 px-6">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${student.feeStatus === 'paid'
-                                                ? 'bg-green-500/10 text-green-400 border-green-500/20'
-                                                : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${displayStatus === 'paid'
+                                                    ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                                    : displayStatus === 'pending'
+                                                        ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                                                        : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                                                 }`}>
-                                                {student.feeStatus}
+                                                {displayStatus}
                                             </span>
                                         </td>
                                         <td className="py-4 px-6">

@@ -8,7 +8,10 @@ export default function DashboardPage() {
     const [announcements, setAnnouncements] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
 
+    const [userRole, setUserRole] = useState('')
+
     useEffect(() => {
+        setUserRole(localStorage.getItem('userRole') || '')
         loadDashboardData()
     }, [])
 
@@ -17,13 +20,17 @@ export default function DashboardPage() {
             const studentId = localStorage.getItem('studentId') || ''
             const role = localStorage.getItem('userRole') || ''
 
-            // For students, pass studentId to filter announcements
+            // For students, pass studentId to filter announcements AND analytics
             const announcementsUrl = role === 'student' && studentId
                 ? `/api/announcements?studentId=${studentId}`
                 : '/api/announcements'
 
+            const analyticsUrl = role === 'student' && studentId
+                ? `/api/analytics?studentId=${studentId}`
+                : '/api/analytics'
+
             const [analyticsRes, announcementsRes] = await Promise.all([
-                fetch('/api/analytics'),
+                fetch(analyticsUrl),
                 fetch(announcementsUrl)
             ])
             const data = await analyticsRes.json()
@@ -54,22 +61,91 @@ export default function DashboardPage() {
         )
     }
 
+
+
     const statCards = [
-        { title: 'Total Students', value: stats.rooms?.occupied || 0, icon: Users, gradient: 'from-purple-600 to-indigo-600' },
-        { title: 'Room Occupancy', value: `${Math.round(stats.rooms?.rate || 0)}%`, icon: Home, gradient: 'from-pink-500 to-rose-600' },
-        { title: 'Collected Fees', value: `$${stats.fees?.collected || 0}`, icon: DollarSign, gradient: 'from-cyan-500 to-blue-600' },
-        { title: 'Pending Complaints', value: stats.complaints?.pending || 0, icon: AlertCircle, gradient: 'from-orange-500 to-red-600' },
+        {
+            title: userRole === 'student' ? 'Room Occupants' : 'Total Students',
+            value: stats.rooms?.occupied || 0,
+            icon: Users,
+            gradient: 'from-purple-600 to-indigo-600'
+        },
+        {
+            title: userRole === 'student' ? 'My Room Usage' : 'Room Occupancy',
+            value: `${Math.round(stats.rooms?.rate || 0)}%`,
+            icon: Home,
+            gradient: 'from-pink-500 to-rose-600'
+        },
+        {
+            title: userRole === 'student' ? 'My Paid Fees' : 'Collected Fees',
+            value: `$${stats.fees?.collected || 0}`,
+            icon: DollarSign,
+            gradient: 'from-cyan-500 to-blue-600'
+        },
+        {
+            title: userRole === 'student' ? 'My Pending Complaints' : 'Pending Complaints',
+            value: stats.complaints?.pending || 0,
+            icon: AlertCircle,
+            gradient: 'from-orange-500 to-red-600'
+        },
     ]
+
+    const downloadBackup = async () => {
+        try {
+            const [students, fees, rooms, complaints, announcements] = await Promise.all([
+                fetch('/api/students').then(r => r.json()),
+                fetch('/api/fees').then(r => r.json()),
+                fetch('/api/rooms').then(r => r.json()),
+                fetch('/api/complaints').then(r => r.json()),
+                fetch('/api/announcements').then(r => r.json())
+            ])
+
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                students: Array.isArray(students) ? students : [],
+                fees: Array.isArray(fees) ? fees : [],
+                rooms: Array.isArray(rooms) ? rooms : [],
+                complaints: Array.isArray(complaints) ? complaints : [],
+                announcements: Array.isArray(announcements) ? announcements : []
+            }
+
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' })
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `hostel-backup-${new Date().toISOString().split('T')[0]}.json`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+            alert('Backup downloaded successfully!')
+        } catch (error) {
+            console.error('Backup failed:', error)
+            alert('Failed to download backup')
+        }
+    }
 
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-                    <p className="text-gray-400">Overview of hostel management statistics</p>
+                    <p className="text-gray-400">
+                        {userRole === 'student' ? 'My Hostel Overview' : 'Overview of hostel management statistics'}
+                    </p>
                 </div>
-                <div className="text-sm text-gray-400">
-                    Last updated: {new Date().toLocaleTimeString()}
+                <div className="flex gap-4 items-center">
+                    {userRole === 'admin' && (
+                        <button
+                            onClick={downloadBackup}
+                            className="text-xs bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition-all flex items-center gap-2"
+                        >
+                            <DollarSign className="w-3 h-3" /> Download Backup
+                        </button>
+                    )}
+                    <div className="text-sm text-gray-400">
+                        Last updated: {new Date().toLocaleTimeString()}
+                    </div>
                 </div>
             </div>
 
@@ -121,7 +197,7 @@ export default function DashboardPage() {
                 <div className="lg:col-span-2 glass-card p-6">
                     <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                         <Home className="w-5 h-5 text-purple-400" />
-                        Room Occupancy Tracker
+                        {userRole === 'student' ? 'My Room Info' : 'Room Occupancy Tracker'}
                     </h2>
                     <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
                         {stats.rooms?.details?.map((room: any) => (
@@ -152,7 +228,7 @@ export default function DashboardPage() {
                 <div className="glass-card p-6">
                     <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                         <AlertCircle className="w-5 h-5 text-orange-400" />
-                        Complaints Status
+                        {userRole === 'student' ? 'My Complaints' : 'Complaints Status'}
                     </h2>
                     <div className="space-y-4">
                         <div className="p-4 rounded-lg bg-white/5 border border-white/10">

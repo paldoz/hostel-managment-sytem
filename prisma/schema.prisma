@@ -57,6 +57,6 @@ model Announcement {
   title     String
   content   String
   type      String   @default("info") // info, warning, urgent
-  // targetStudentIds String[] @default([]) // Temporarily disabled until DB syncs
+  targetStudentIds String   @default("") // Comma-separated IDs since SQLite doesn't support arrays
   createdAt DateTime @default(now())
 }
